@@ -7,6 +7,7 @@ import org.example.userauthenticationservice_sept2024.Exception.UserNotFoundExce
 import org.example.userauthenticationservice_sept2024.Exception.WrongPasswordException;
 import org.example.userauthenticationservice_sept2024.models.User;
 import org.example.userauthenticationservice_sept2024.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,20 +16,23 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
-//    @Autowired
+    @Autowired
     private UserRepository userRepository;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public AuthService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+//    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+//    public AuthService(UserRepository userRepository) {
+//        this.userRepository = userRepository;
+//    }
 
     public boolean signUp(String email, String password) throws UserAlreadyExistsException {
         if( userRepository.findByEmail(email).isPresent() ) {
             throw new UserAlreadyExistsException("User with email : "+email+" already present in the system");
         }
-        String hashedPassword = passwordEncoder.encode(password);
+        String hashedPassword = bCryptPasswordEncoder.encode(password);
         User user = new User();
         user.setEmail(email);
         user.setPassword(hashedPassword);
@@ -43,13 +47,13 @@ public class AuthService {
         }
         User user = userOptional.get();
 
-        if( passwordEncoder.matches(password, user.getPassword()) ) {
+        if( bCryptPasswordEncoder.matches(password, user.getPassword()) ) {
             return true;
         }
-        return false;
-//        else{
-//            throw new WrongPasswordException("Wrong password");
-//        }
+//        return false;
+        else{
+            throw new WrongPasswordException("Wrong password");
+        }
 
 //        if( password.equals(user.getPassword()) ) {
 //            String token = email+":"+password;
